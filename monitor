@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
+
+INTERFACE=wlo1
+
+if [ "$1" == "-on" ]; then
+    echo "Turning Monitor Mode ON for $INTERFACE..."
+    sudo ip link set $INTERFACE down
+    sudo iw $INTERFACE set monitor none
+    sudo ip link set $INTERFACE up
+    sudo systemctl stop NetworkManager
+    sudo systemctl stop wpa_supplicant
+    echo "Monitor Mode is now enabled for $INTERFACE."
+
+elif [ "$1" == "-off" ]; then
+    echo "Turning Monitor Mode OFF for $INTERFACE..."
+    sudo ip link set $INTERFACE down
+    sudo iw $INTERFACE set type managed
+    sudo ip link set $INTERFACE up
+    sudo systemctl start NetworkManager
+    sudo systemctl start wpa_supplicant
+    echo "Managed Mode is now enabled for $INTERFACE."
+
+else
+    echo "Usage: $0 -on | -off"
+fi
+

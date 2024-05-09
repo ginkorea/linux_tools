@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Path to the keyboard backlight brightness control
+BACKLIGHT_PATH="/sys/class/leds/asus::kbd_backlight/brightness"
+
+# Function to set brightness
+set_brightness() {
+    echo $1 | sudo tee $BACKLIGHT_PATH > /dev/null
+}
+
+# Check arguments and act accordingly
+case "$1" in
+    -on)
+        set_brightness 3
+        ;;
+    -off)
+        set_brightness 0
+        ;;
+    *)
+        echo "Usage: $0 -on | -off"
+        exit 1
+        ;;
+esac
