@@ -1,0 +1,93 @@
+#!/bin/bash
+
+calculate() {
+    local operation=$1
+    local num1=$2
+    local num2=$3
+    local base=$4
+
+    # Check if the base is hexadecimal, set ibase accordingly
+    if [ "$base" = "decimal" ]; then
+        ibase=10
+    else
+        ibase=16
+    fi
+
+    case $operation in
+        "add")
+            result=$(echo "ibase=$ibase; $num1 + $num2" | bc)
+            ;;
+        "subtract")
+            result=$(echo "ibase=$ibase; $num1 - $num2" | bc)
+            ;;
+        "multiply")
+            result=$(echo "ibase=$ibase; $num1 * $num2" | bc)
+            ;;
+        "divide")
+            result=$(echo "scale=0; ibase=$ibase; $num1 / $num2" | bc)
+            ;;
+        *)
+            echo "Invalid operation: $operation"
+            exit 1
+            ;;
+    esac
+
+    echo "$result"
+}
+
+
+convert() {
+    local num=$1
+    local base=$2
+
+    case $base in
+        "hex")
+            echo "ibase=16; $num" | bc
+            ;;
+        "decimal")
+            echo "$num"
+            ;;
+        *)
+            echo "Invalid base: $base"
+            exit 1
+            ;;
+    esac
+}
+
+main() {
+    if [ $# -lt 3 ] || [ $# -gt 4 ]; then
+        echo "Usage:"
+        echo "  $0 convert <num> <base>"
+        echo "  $0 <operation> <num1> <num2> [<base>]"
+        exit 1
+    fi
+
+    if [ "$1" = "convert" ]; then
+        if [ $# -ne 3 ]; then
+            echo "Usage: $0 convert <num> <base>"
+            exit 1
+        fi
+        result=$(convert $2 $3)
+        echo "Result: $result"
+        exit 0
+    fi
+
+    operation=$1
+    num1=$2
+    num2=$3
+    base=${4:-"hex"} # Default base is hexadecimal
+
+    case $operation in
+        "add" | "subtract" | "multiply" | "divide")
+            ;;
+        *)
+            echo "Invalid operation: $operation"
+            exit 1
+            ;;
+    esac
+
+    result=$(calculate "$operation" "$num1" "$num2" "$base")
+    echo "Result: $result"
+}
+
+main "$@"
